@@ -17,11 +17,12 @@ Widget::~Widget()
 void Widget::on_btnResult_clicked()
 {
     QString str=ui->lineEdit->text();
+	QString tempStr;
     int posL=str.lastIndexOf("(");
     int posR=-1;
     QString strTemp="";
     ui->lineEdit->setText(QString::asprintf("%d",str.length()));
-    if(posL)
+    if(posL>=0)
     {
         for (int i=posL;i<str.length();i++)
         {
@@ -38,35 +39,37 @@ void Widget::on_btnResult_clicked()
             strTemp+=str[i];
         }
     }
-
-    //ui->lineEdit->setText(strTemp);
+	//tempStr = BasicCalculate(str);
+	QRegExp rx;
+	rx.setPattern("(\\.){0,1}0+$");
+	tempStr = QString("%1").arg(BasicCalculate(str).toDouble(), 0, 'f', -1).replace(rx, "");
+    ui->lineEdit->setText(tempStr);
     //ui->lineEdit->setText(QString::asprintf("%d----%d",posL,posR));
 }
 
 QString Widget::BasicCalculate(QString str)
 {
-    QList<QString> list,poslist;
+    QList<QString> list;
     QString strOp="+-*/";
     QString tempStr="";
-    QString tempOp="";
     QString strReturn="";
     int temp =0;
+	int TEMP[100] = {};//运算符位置存放
     int pos=0;
     for (int i=0;i<str.length();i++)
     {
-        for (int j=0;j<strOp;j++)
+        for (int j=0;j<strOp.length();j++)
         {
             if(str[i]==strOp[j])
             {
+			   QString tempOp = "";
                temp++;
-               tempOp+=str[i];
-               poslist.append(tempOp);
-               tempOp.clear();
+			   TEMP[temp - 1] = i;
                for (int k=pos;k<i;k++)
                {
                     tempStr+=str[k];
-                    tempOp+=strOp[j];
                }
+			   tempOp += strOp[j];
                list.append(tempStr);
                list.append(tempOp);
                tempOp.clear();
@@ -75,7 +78,7 @@ QString Widget::BasicCalculate(QString str)
             }
         }
     }
-    if(temp==0)
+    if(temp==0||(temp==1&&str[0]=='-'))
         return str;
 
     for (int k=pos;k<str.length();k++)
@@ -83,9 +86,10 @@ QString Widget::BasicCalculate(QString str)
     list.append(tempStr);
 
     QList<QString> num;
+	num += "0";
     for (int i=0;i<temp;i++)
     {
-        switch (str[poslist[i].toUInt()].unicode())
+        switch (str[TEMP[i]].unicode())
         {
         case '*':
             num.append("2");
@@ -112,13 +116,15 @@ QString Widget::BasicCalculate(QString str)
             Sum=list[2*i-2].toDouble()*list[2*i].toDouble();
 
             list.removeAt(2*i);
-            list.removeAt(2*i);
-            list.removeAt(2*i);
-            list.insert(2*i,QString::asprintf("%f",Sum));
+            list.removeAt(2*i-1);
+            list.removeAt(2*i-2);
+            list.insert(2*i-2,QString::asprintf("%f",Sum));
             for (int j=0;j<list.size();j++)
             {
                   strReturn+=list[j];
             }
+			//去除后面的0
+			
             return BasicCalculate(strReturn);
         }
     }
