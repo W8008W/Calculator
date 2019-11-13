@@ -25,10 +25,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        calculator.cpp \
         main.cpp \
         widget.cpp
 
 HEADERS += \
+        calculator.h \
         widget.h
 
 FORMS += \
