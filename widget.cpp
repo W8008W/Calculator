@@ -20,12 +20,13 @@ void Widget::on_btnResult_clicked()
     QString str=ui->lineEdit->text();
     QString str2;
     Calculator cal;
-    QList<QString> list =cal.convertToList(str);
-    for (int i=0;i<list.size();i++)
+    cal.list=cal.convertToList(str);
+    if(cal.isLineCorrect(cal.list))
     {
-          str2.append(list[i]);
-		  str2.append("|");
+        ui->lineEdit->setText(QString::fromLocal8Bit("输入正确"));
     }
-    ui->lineEdit->setText(str2);
-
+    else
+    {
+        ui->lineEdit->setText(cal.errorMessage);
+    }
 }
