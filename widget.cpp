@@ -18,15 +18,6 @@ Widget::~Widget()
 void Widget::on_btnResult_clicked()
 {
     QString str=ui->lineEdit->text();
-    QString str2;
     Calculator cal;
-    cal.list=cal.convertToList(str);
-    if(cal.isLineCorrect(cal.list))
-    {
-        ui->lineEdit->setText(QString::fromLocal8Bit("输入正确"));
-    }
-    else
-    {
-        ui->lineEdit->setText(cal.errorMessage);
-    }
+    ui->lineEdit->setText((cal.getResult(str)));
 }

@@ -30,7 +30,7 @@ void Calculator::setOpMap()
     oPMap.insert("lg",400);
     oPMap.insert("ln",400);
     oPMap.insert("(",500);
-    oPMap.insert(")",400);
+    oPMap.insert(")",500);
 }
 
 bool Calculator::isOperator(QString str)
@@ -47,6 +47,19 @@ bool Calculator::isOperator(QString str)
 
 bool Calculator::isOperendS(QString str)
 {
+    if(str.length()==1)
+    {
+        if(str=="-")
+            return false;
+        else if (str=="e"||str=="π")
+            return true;
+    }
+    if(str.length()==2)
+    {
+        if(str=="pi"||str=="PI")
+            return true;
+    }
+
 	for (int i = 0; i < str.length(); i++)
 	{
         if (!((str[i] >= '0'&&str[i] <= '9') || (str[i] == '.') || (str[i] == '-')))
@@ -59,6 +72,48 @@ bool Calculator::isOperendS(QString str)
 
 bool Calculator::isLineCorrect(QList<QString> list)
 {
+    QList<QString> tempK;
+    tempK.clear();
+	int tempL = 0;
+	int tempR = 0;
+
+	//判断括号是否输入正确
+    for (int i = list.length()-1; i >=0; i--)
+	{
+        for (int j = 0; j<= i; j++)
+        {
+            if (list[j] == "(")
+            {
+                tempL++;
+                tempK.append("(");
+            }
+            else if (list[j]==")")
+            {
+                tempR++;
+                tempK.append(")");
+            }
+        }
+
+        if(tempR>tempL)
+        {
+            errorMessage=QString::fromLocal8Bit("括号输入错误！！！");
+            isCorrect=false;
+            return isCorrect;
+        }
+        tempL=0;
+        tempR=0;
+	}
+
+	for (int i=0;i<list.length();i++)
+	{
+		if (!isOperendS(list[i])&&!isOperator(list[i]))
+		{
+			errorMessage = QString::fromLocal8Bit("未知输入！！！");
+			isCorrect = false;
+			return isCorrect;
+		}
+	}
+
     for(int i=0;i<list.size();i++)
     {
         if(isOperator(list[i]))
@@ -95,9 +150,9 @@ bool Calculator::isLineCorrect(QList<QString> list)
                         isCorrect=false;
                         return isCorrect;
                     }
-                    else if (!(i==0||(isOperendS(list[i-1])&&list[i-1]!="-")||list[i-1]==")" || list[i - 1] == "!"))
+                    else if (!(i==0||(isOperendS(list[i-1])&&list[i-1]!="-")||list[i-1]==")" ||list[i-1]=="(" || list[i - 1] == "!"))
                     {
-                        errorMessage=QString::fromLocal8Bit("减法输入错误！！！，减法前面只能跟数字、）、!或空");
+                        errorMessage=QString::fromLocal8Bit("减法输入错误！！！，减法前面只能跟数字、）、（、!或空");
                         isCorrect=false;
                         return isCorrect;
                     }
@@ -467,11 +522,115 @@ bool Calculator::isLineCorrect(QList<QString> list)
 						}
 					}
 				}
-				break;;
+				break;
+			case 500:
+				if (list[i]=="(")
+				{
+					if (i == list.size() - 1)
+					{
+						errorMessage = QString::fromLocal8Bit("输入错误,(不能在尾部！！！");
+						isCorrect = false;
+						return isCorrect;
+					}
+					else if (list[i+1]=="+"|| list[i + 1] == "-" || list[i + 1] == "*" || list[i + 1] == "/" || list[i + 1] == "^" || list[i + 1] == "%"|| list[i + 1] == "!"|| list[i + 1] == ")")
+					{
+						errorMessage = QString::fromLocal8Bit("(后面输入错误！！！");
+						isCorrect = false;
+						return isCorrect;
+					}
+					else if (i > 0)
+					{
+						if (isOperendS(list[i - 1]))
+						{
+							errorMessage = QString::fromLocal8Bit("输入错误,（前面不能接数字！！！");
+							isCorrect = false;
+							return isCorrect;
+						}
+						else if (list[i - 1] == ")")
+						{
+							errorMessage = QString::fromLocal8Bit("函数输入错误,(前面不能接右括号！！！");
+							isCorrect = false;
+							return isCorrect;
+						}
+					}
+				}
+				if (list[i] == ")")
+				{
+					if (i == 0)
+					{
+						errorMessage = QString::fromLocal8Bit("输入错误,)不能在头部！！！");
+						isCorrect = false;
+						return isCorrect;
+					}
+					else if (isOperator(list[i-1])&&list[i-1]!=")")
+					{
+						errorMessage = QString::fromLocal8Bit("输入错误,)前面输入错误！！！");
+						isCorrect = false;
+						return isCorrect;
+					}
+					else if(i<list.length()-1)
+					{
+						if (isOperendS(list[i+1])||list[i+1]=="tan"|| list[i + 1] == "cot"|| list[i + 1] == "sin"|| list[i + 1] == "cos"|| list[i + 1] == "(")
+						{
+							errorMessage = QString::fromLocal8Bit("输入错误,)后面输入错误！！！");
+							isCorrect = false;
+							return isCorrect;
+						}
+					}
+				}
+				break;
+            }
+        }
+        else if (isOperendS(list[i]))
+        {
+            if(list[i]=="e"||list[i]=="PI"||list[i]=="pi"||list[i]=="π")
+            {
+                if(i==0&&list.length()>1)
+                {
+                    if(isOperendS(list[i+1]))
+                    {
+                        errorMessage=QString::fromLocal8Bit("输入错误！！！");
+                        isCorrect=false;
+                        return isCorrect;
+                    }
+                }
+                else if(i>0)
+                {
+                    if(isOperendS(list[i-1]))
+                    {
+                        errorMessage=QString::fromLocal8Bit("输入错误！！！");
+                        isCorrect=false;
+                        return isCorrect;
+                    }
+                }
             }
         }
     }
     return true;
+}
+
+void Calculator::addList(QList<QString> tempList)
+{
+    int tempL=0;
+    int tempR=0;
+    QList<QString> temp;
+    temp=tempList;
+    for (int i=0;i<temp.length();i++)
+    {
+        if(temp[i]=="(")
+            tempL++;
+        else if (temp[i]==")")
+        {
+            tempR++;
+        }
+    }
+    if(tempL>tempR)
+    {
+        for (int i=0;i<(tempL-tempR);i++)
+        {
+            list.append(")");
+        }
+    }
 }
 
 bool Calculator::isMath(QString str)
@@ -484,7 +643,7 @@ bool Calculator::isMath(QString str)
 }
 
 bool Calculator::isOperend(QString str)
-{
+{      
     if((str[0]>='0'&&str[0]<='9')||(str[0]=='.'))
     {
         return true;
@@ -585,5 +744,37 @@ QList<QString> Calculator::convertToList(QString str)
         judge.clear();
     }
     return list;
+}
+
+QString Calculator::getResult(QString str)
+{
+    QString str1="";
+
+    //是否是空
+    if(str.isEmpty())
+    {
+        errorMessage=QString::fromLocal8Bit("请输入数据");
+        isCorrect=false;
+        return errorMessage;
+    }
+    //转换为Qlist<QString>方便计算
+    list=convertToList(str);
+
+    //算式错误，退出计算并输出错误信息
+    if(!(isLineCorrect(list)))
+    {
+        return errorMessage;
+    }
+    //算式正确后，不全缺少的右括号
+    else
+    {
+         addList(list);
+    }
+    for (int i=0;i<list.length();i++)
+    {
+         str1.append(list[i]);
+    }
+    return str1;
+
 }
 

@@ -31,8 +31,15 @@ public:
 	bool isOperendS(QString str);
     //判断算式括号是否正确
     bool isLineCorrect(QList<QString> list);
+
+    //算式添加右括号
+    void addList(QList<QString> tempList);
     //将算式转换成链表
     QList<QString> convertToList(QString str);
+
+
+    //终于到计算了
+    QString getResult(QString str);
 };
 
 #endif // CALCULATOR_H
